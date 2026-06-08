@@ -1,16 +1,15 @@
-daily_crawl.yml
 name: Daily Stock Crawler
 
 on:
   schedule:
-    - cron: '30 13 * * *' # 每天台灣時間 21:30 (UTC 13:30)
-  workflow_dispatch: # 讓您可以隨時在網頁上點「手動執行」
+    - cron: '30 13 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # 必須要給予寫入權限
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

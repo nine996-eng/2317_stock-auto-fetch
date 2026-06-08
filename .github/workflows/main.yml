@@ -29,6 +29,10 @@ jobs:
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          git add foxconn_data.csv
-          git commit -m "Auto-update stock data"
-          git push
+          if [ -f "foxconn_data.csv" ]; then
+            git add foxconn_data.csv
+            git commit -m "Auto-update stock data"
+            git push
+          else
+            echo "沒有發現 csv 檔案，跳過提交。"
+          fi

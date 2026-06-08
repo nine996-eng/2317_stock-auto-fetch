@@ -1,0 +1,35 @@
+daily_crawl.yml
+name: Daily Stock Crawler
+
+on:
+  schedule:
+    - cron: '30 13 * * *' # 每天台灣時間 21:30 (UTC 13:30)
+  workflow_dispatch: # 讓您可以隨時在網頁上點「手動執行」
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 必須要給予寫入權限
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install requests pandas yfinance
+
+      - name: Run script
+        run: python main.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add foxconn_data.csv
+          git commit -m "Auto-update stock data"
+          git push

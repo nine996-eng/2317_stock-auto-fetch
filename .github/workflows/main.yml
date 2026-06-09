@@ -1,38 +1,11 @@
-name: Daily Stock Crawler
-
-on:
-  schedule:
-    - cron: '30 13 * * *'
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13'
-
-      - name: Install dependencies
-        run: pip install requests pandas yfinance
-
-      - name: Run script
-        run: python main.py
-
-      - name: Commit and push changes
+- name: Commit and push changes
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
+          # 若檔案不存在或無變更，則自動跳過，避免 exit code 1
           if [ -f "foxconn_data.csv" ]; then
             git add foxconn_data.csv
-            git commit -m "Auto-update stock data"
-            git push
+            git diff --quiet && git diff --staged --quiet || (git commit -m "Update stock data" && git push)
           else
-            echo "沒有發現 csv 檔案，跳過提交。"
+            echo "No file to commit, skipping."
           fi

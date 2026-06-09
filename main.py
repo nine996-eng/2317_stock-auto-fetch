@@ -55,11 +55,12 @@ def get_data():
 
         
         # 存檔
-        # file_path = r"D:\StockProject\foxconn_data.csv"
-        # file_exists = os.path.isfile(file_path)
+        file_path = "foxconn_data.csv"
+        file_exists = os.path.isfile(file_path)
+         pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
         # final_df = pd.DataFrame([output_data])
         # final_df.to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
-        # print(f"資料同步更新: {output_data}")
+         print(f"資料同步更新: {output_data}")
 
     except Exception as e:
         print(f"執行錯誤: {e}")

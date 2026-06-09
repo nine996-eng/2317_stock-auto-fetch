@@ -4,14 +4,12 @@ import pandas as pd
 from datetime import datetime
 import yfinance as yf
 
-# 安全轉換數字的輔助函數
 def safe_int(value):
     try:
         return int(str(value).replace(',', '').replace('-', '0'))
     except:
         return 0
 
-# 獲取大盤資訊的輔助函數
 def get_market_val(df_m, name):
     try:
         row = df_m[df_m.iloc[:, 0] == name]
@@ -22,11 +20,7 @@ def get_market_val(df_m, name):
     return 0
 
 def get_data():
-    # 模擬瀏覽器訪問，這是解決 'Expecting value' 錯誤的關鍵
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://www.twse.com.tw/'
-    }
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
     date_str = datetime.now().strftime("%Y%m%d")
     
     url_stock = f"https://www.twse.com.tw/fund/T86?response=json&date={date_str}&selectType=ALLBUT0999"
@@ -37,17 +31,13 @@ def get_data():
         res_m = requests.get(url_market, headers=headers, timeout=20)
         
         if res_s.status_code == 200 and res_m.status_code == 200:
-            data_s = res_s.json()
-            data_m = res_m.json()
-            
+            data_s, data_m = res_s.json(), res_m.json()
             if 'data' in data_s and 'data' in data_m:
                 df_s = pd.DataFrame(data_s['data'], columns=data_s['fields'])
                 df_m = pd.DataFrame(data_m['data'], columns=data_m['fields'])
-                
                 foxconn = df_s[df_s['證券代號'] == '2317']
                 
                 if not foxconn.empty:
-                    # 整理輸出欄位
                     output_data = {
                         '日期': datetime.now().strftime("%Y-%m-%d"),
                         '鴻海_外資(張)': round(safe_int(foxconn['外陸資買賣超股數(不含外資自營商)'].values[0]) / 1000),
@@ -59,20 +49,14 @@ def get_data():
                         '大盤_自營(億)': get_market_val(df_m, '自營商'),
                         '加權指數': round(yf.Ticker("^TWII").history(period="1d")['Close'].iloc[-1], 2)
                     }
-                    
-                    # 寫入 CSV (Append 模式)
-                    file_path = "foxconn_data.csv"
-                    file_exists = os.path.isfile(file_path)
-                    pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
-                    print(f"資料成功更新: {output_data}")
+                    pd.DataFrame([output_data]).to_csv("foxconn_data.csv", mode='a', header=not os.path.exists("foxconn_data.csv"), index=False, encoding='utf-8-sig')
+                    print("SUCCESS")
                 else:
-                    print("今日無 2317 資料，跳過本次寫入")
+                    print("NO_DATA")
             else:
-                print("API 回傳資料異常")
-        else:
-            print(f"無法取得資料，狀態碼: {res_s.status_code}")
+                print("NO_DATA")
     except Exception as e:
-        print(f"程式執行錯誤: {e}")
+        print(f"ERROR: {e}")
 
 if __name__ == "__main__":
     get_data()

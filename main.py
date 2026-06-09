@@ -46,13 +46,7 @@ def get_data():
             '加權指數': round(ticker_twii['Close'].iloc[-1], 2)
         }
 
-        # 存入 CSV
-            file_path = "foxconn_data.csv"
-            file_exists = os.path.isfile(file_path)
-            pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
-             print(f"資料成功寫入: {output_data}")
-
-
+     
         
         # 存檔
         file_path = "foxconn_data.csv"

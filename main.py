@@ -4,14 +4,14 @@ import pandas as pd
 from datetime import datetime
 import yfinance as yf
 
-# 安全數值轉換，避免空值報錯
+# 安全數值轉換函數，避免空值造成程式崩潰
 def safe_int(value):
     try:
         return int(str(value).replace(',', '').replace('-', '0'))
     except:
         return 0
 
-# 取得大盤資訊
+# 獲取大盤資訊的輔助函數
 def get_market_val(df_m, name):
     try:
         row = df_m[df_m.iloc[:, 0] == name]
@@ -22,7 +22,11 @@ def get_market_val(df_m, name):
     return 0
 
 def get_data():
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+    # 模擬瀏覽器 Header，繞過證交所 API 的防爬蟲限制
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://www.twse.com.tw/'
+    }
     date_str = datetime.now().strftime("%Y%m%d")
     
     url_stock = f"https://www.twse.com.tw/fund/T86?response=json&date={date_str}&selectType=ALLBUT0999"
@@ -43,7 +47,7 @@ def get_data():
                 foxconn = df_s[df_s['證券代號'] == '2317']
                 
                 if not foxconn.empty:
-                    # 整理輸出欄位
+                    # 整理您要求的輸出資訊
                     output_data = {
                         '日期': datetime.now().strftime("%Y-%m-%d"),
                         '鴻海_外資(張)': round(safe_int(foxconn['外陸資買賣超股數(不含外資自營商)'].values[0]) / 1000),
@@ -56,18 +60,19 @@ def get_data():
                         '加權指數': round(yf.Ticker("^TWII").history(period="1d")['Close'].iloc[-1], 2)
                     }
                     
+                    # 寫入 CSV (Append 模式)
                     file_path = "foxconn_data.csv"
                     file_exists = os.path.isfile(file_path)
                     pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
-                    print(f"寫入成功: {output_data}")
+                    print(f"資料成功寫入: {output_data}")
                 else:
-                    print("今日無 2317 鴻海資料 (可能非交易日)")
+                    print("今日無鴻海 2317 的交易資料")
             else:
-                print("API 回傳資料異常")
+                print("API 回傳結構異常")
         else:
-            print("無法連接證交所")
+            print("無法連接至證交所 API")
     except Exception as e:
-        print(f"程式錯誤: {e}")
+        print(f"程式執行異常: {e}")
 
 if __name__ == "__main__":
     get_data()

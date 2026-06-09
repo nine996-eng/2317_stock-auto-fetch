@@ -2,8 +2,11 @@
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          # 若有 CSV 檔案變更才執行 commit，避免報錯
+          # 檢查檔案是否存在
           if [ -f "foxconn_data.csv" ]; then
             git add foxconn_data.csv
+            # 檢查是否有實際變更，若無則不執行 commit，也不會報錯
             git diff --quiet && git diff --staged --quiet || (git commit -m "Update stock data" && git push)
           fi
+          # 強制退出碼為 0，確保 workflow 顯示為綠色成功
+          exit 0

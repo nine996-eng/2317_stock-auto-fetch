@@ -2,12 +2,10 @@
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          # 若有 CSV 檔案變更才執行 commit，避免報錯
+          # 如果檔案存在且有變更，才進行提交，否則直接結束
           if [ -f "foxconn_data.csv" ]; then
             git add foxconn_data.csv
             git diff --quiet && git diff --staged --quiet || (git commit -m "Update stock data" && git push)
-          else
-            echo "No file to commit, skipping."
           fi
-          # 強制結束碼為 0，確保 workflow 顯示為綠色成功
+          # 強制讓這個步驟永遠顯示成功
           exit 0

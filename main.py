@@ -3,15 +3,15 @@ import requests
 import pandas as pd
 from datetime import datetime
 import yfinance as yf
-import time
 
+# 安全數值轉換，避免空值報錯
 def safe_int(value):
     try:
-        # 移除逗號並轉為整數
         return int(str(value).replace(',', '').replace('-', '0'))
     except:
         return 0
 
+# 取得大盤資訊
 def get_market_val(df_m, name):
     try:
         row = df_m[df_m.iloc[:, 0] == name]
@@ -22,22 +22,16 @@ def get_market_val(df_m, name):
     return 0
 
 def get_data():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
     date_str = datetime.now().strftime("%Y%m%d")
     
-    # 鴻海法人資料
     url_stock = f"https://www.twse.com.tw/fund/T86?response=json&date={date_str}&selectType=ALLBUT0999"
-    # 大盤資料
     url_market = f"https://www.twse.com.tw/fund/BFI8U2?response=json&date={date_str}"
     
     try:
-        # 確保有獲取到資料
         res_s = requests.get(url_stock, headers=headers, timeout=20)
         res_m = requests.get(url_market, headers=headers, timeout=20)
         
-        # 檢查回應格式是否為 JSON
         if res_s.status_code == 200 and res_m.status_code == 200:
             data_s = res_s.json()
             data_m = res_m.json()
@@ -49,6 +43,7 @@ def get_data():
                 foxconn = df_s[df_s['證券代號'] == '2317']
                 
                 if not foxconn.empty:
+                    # 整理輸出欄位
                     output_data = {
                         '日期': datetime.now().strftime("%Y-%m-%d"),
                         '鴻海_外資(張)': round(safe_int(foxconn['外陸資買賣超股數(不含外資自營商)'].values[0]) / 1000),
@@ -66,13 +61,13 @@ def get_data():
                     pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
                     print(f"寫入成功: {output_data}")
                 else:
-                    print("今日無鴻海 2317 資料，可能非交易日")
+                    print("今日無 2317 鴻海資料 (可能非交易日)")
             else:
-                print("API 回傳結構異常，跳過")
+                print("API 回傳資料異常")
         else:
-            print("無法連接證交所 API")
+            print("無法連接證交所")
     except Exception as e:
-        print(f"發生錯誤: {e}")
+        print(f"程式錯誤: {e}")
 
 if __name__ == "__main__":
     get_data()

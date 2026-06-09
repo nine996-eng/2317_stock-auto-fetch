@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 import yfinance as yf
 
-# 安全數值轉換函數，避免空值造成程式崩潰
+# 安全轉換數字的輔助函數
 def safe_int(value):
     try:
         return int(str(value).replace(',', '').replace('-', '0'))
@@ -22,7 +22,7 @@ def get_market_val(df_m, name):
     return 0
 
 def get_data():
-    # 模擬瀏覽器 Header，繞過證交所 API 的防爬蟲限制
+    # 模擬瀏覽器訪問，這是解決 'Expecting value' 錯誤的關鍵
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Referer': 'https://www.twse.com.tw/'
@@ -47,7 +47,7 @@ def get_data():
                 foxconn = df_s[df_s['證券代號'] == '2317']
                 
                 if not foxconn.empty:
-                    # 整理您要求的輸出資訊
+                    # 整理輸出欄位
                     output_data = {
                         '日期': datetime.now().strftime("%Y-%m-%d"),
                         '鴻海_外資(張)': round(safe_int(foxconn['外陸資買賣超股數(不含外資自營商)'].values[0]) / 1000),
@@ -64,15 +64,15 @@ def get_data():
                     file_path = "foxconn_data.csv"
                     file_exists = os.path.isfile(file_path)
                     pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
-                    print(f"資料成功寫入: {output_data}")
+                    print(f"資料成功更新: {output_data}")
                 else:
-                    print("今日無鴻海 2317 的交易資料")
+                    print("今日無 2317 資料，跳過本次寫入")
             else:
-                print("API 回傳結構異常")
+                print("API 回傳資料異常")
         else:
-            print("無法連接至證交所 API")
+            print(f"無法取得資料，狀態碼: {res_s.status_code}")
     except Exception as e:
-        print(f"程式執行異常: {e}")
+        print(f"程式執行錯誤: {e}")
 
 if __name__ == "__main__":
     get_data()

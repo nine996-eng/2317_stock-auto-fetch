@@ -22,7 +22,7 @@ def get_market_val(df_m, name):
     return 0
 
 def get_data():
-    # 模擬瀏覽器訪問，這是解決 'Expecting value' 錯誤的關鍵
+    # 模擬真實瀏覽器訪問，這是解決網站封鎖的關鍵
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Referer': 'https://www.twse.com.tw/'
@@ -47,7 +47,7 @@ def get_data():
                 foxconn = df_s[df_s['證券代號'] == '2317']
                 
                 if not foxconn.empty:
-                    # 整理輸出欄位
+                    # 整理輸出資訊
                     output_data = {
                         '日期': datetime.now().strftime("%Y-%m-%d"),
                         '鴻海_外資(張)': round(safe_int(foxconn['外陸資買賣超股數(不含外資自營商)'].values[0]) / 1000),
@@ -66,13 +66,13 @@ def get_data():
                     pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
                     print(f"資料成功更新: {output_data}")
                 else:
-                    print("今日無 2317 資料，跳過本次寫入")
+                    print("今日無 2317 資料")
             else:
-                print("API 回傳資料異常")
+                print("API 回傳結構異常")
         else:
-            print(f"無法取得資料，狀態碼: {res_s.status_code}")
+            print(f"無法連接至 API，狀態碼: {res_s.status_code}")
     except Exception as e:
-        print(f"程式執行錯誤: {e}")
+        print(f"程式執行異常: {e}")
 
 if __name__ == "__main__":
     get_data()

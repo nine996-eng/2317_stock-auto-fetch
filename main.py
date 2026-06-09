@@ -45,13 +45,21 @@ def get_data():
             '大盤_自營(張)': round(total_dealer / 1000),
             '加權指數': round(ticker_twii['Close'].iloc[-1], 2)
         }
+
+        # 存入 CSV
+            file_path = "foxconn_data.csv"
+            file_exists = os.path.isfile(file_path)
+            pd.DataFrame([output_data]).to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
+             print(f"資料成功寫入: {output_data}")
+
+
         
         # 存檔
-        file_path = r"D:\StockProject\foxconn_data.csv"
-        file_exists = os.path.isfile(file_path)
-        final_df = pd.DataFrame([output_data])
-        final_df.to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
-        print(f"資料同步更新: {output_data}")
+        # file_path = r"D:\StockProject\foxconn_data.csv"
+        # file_exists = os.path.isfile(file_path)
+        # final_df = pd.DataFrame([output_data])
+        # final_df.to_csv(file_path, mode='a', header=not file_exists, index=False, encoding='utf-8-sig')
+        # print(f"資料同步更新: {output_data}")
 
     except Exception as e:
         print(f"執行錯誤: {e}")

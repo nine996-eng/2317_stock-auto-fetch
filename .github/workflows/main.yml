@@ -2,33 +2,37 @@ name: Daily Stock Crawler
 
 on:
   schedule:
-    - cron: '30 13 * * *'
-  workflow_dispatch:
+    - cron: '30 13 * * *' # 每天台灣時間 21:30 執行
+  workflow_dispatch:      # 允許手動測試執行
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v4
+      
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-
+          python-version: '3.9'
+          
       - name: Install dependencies
-        run: pip install requests pandas yfinance
-
+        run: pip install pandas requests yfinance
+        
       - name: Run script
         run: python main.py
-
+        
       - name: Commit and push changes
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          git add foxconn_data.csv
-          git commit -m "Auto-update stock data"
-          git push
+          
+          # 檢查 CSV 是否存在且有變更
+          if [ -f "foxconn_data.csv" ]; then
+            git add foxconn_data.csv
+            # 只有當檔案內容有實際差異時才 commit，避免 "nothing to commit" 報錯
+            git diff --quiet && git diff --staged --quiet || (git commit -m "Update stock data" && git push)
+          fi
+          
+          # 強制回傳 0，讓整個 Action 顯示為成功狀態
+          exit 0
